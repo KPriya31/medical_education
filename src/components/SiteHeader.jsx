@@ -1,0 +1,30 @@
+// Top institute header bar shown on every screen (login, department select, app shell).
+export default function SiteHeader({ showSearch = true }) {
+  return (
+    <header className="institute-header">
+      <div className="identity-bar">
+        <div className={showSearch ? "identity-inner" : "identity-inner centered"}>
+          <img
+            className="identity-logo-img identity-logo-left"
+            src="/images/emblem.png"
+            alt="Government emblem"
+          />
+          <div className="identity-title">
+            <b>MEDICAL EDUCATION BOARD</b>
+            <strong>Examination Marks Software (EMS)</strong>
+            <span>
+              MOTHER THERESA POST GRADUATE AND RESEARCH INSTITUTE OF HEALTH
+              SCIENCES (MTPG & RIHS)
+            </span>
+            <em>Government of Puducherry Institution</em>
+          </div>
+          <img
+            className="identity-logo-img identity-logo-right"
+            src="/images/header_logo.png"
+            alt="Institute logo"
+          />
+        </div>
+      </div>
+    </header>
+  );
+}
