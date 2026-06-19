@@ -18,6 +18,7 @@ import {
 import StatusBadge from "../components/StatusBadge.jsx";
 import DataTable from "../components/DataTable.jsx";
 import RecordModal from "../components/RecordModal.jsx";
+import CourseSelectModal from "../components/CourseSelectModal.jsx";
 import { BOARD_ROLES, ENTITY_FIELDS, ENTITY_COLUMNS } from "../data.js";
 import { isStatusVisibleForRole, emptyRowFromFields } from "../utils.js";
 import * as api from "../api.js";
@@ -185,11 +186,6 @@ function BoardDashboard({ role, data, setActiveRoute }) {
     [examSems],
   );
 
-  const courseOptions = useMemo(
-    () => courses.map((c) => ({ value: String(c.id), label: c.name })),
-    [courses],
-  );
-
   const subjectOptions = useMemo(
   () => subjects.map((s) => ({ value: String(s.id), label: s.name })),
   [subjects],
@@ -202,24 +198,26 @@ function BoardDashboard({ role, data, setActiveRoute }) {
       ),
     [regionOptions],
   );
+  // "subject" stays plain text - used by the table's own "+ Add" button so
+  // typing a name creates it directly in the subject master table.
   const subjectFields = useMemo(
   () =>
     ENTITY_FIELDS.boardSubject.map(([key, label, options]) => {
-      if (key === "subject") return [key, label, subjectOptions];   
       if (key === "year") return [key, label, yearOptions];
       if (key === "semester") return [key, label, semOptions];
       return [key, label, options];
     }),
-  [yearOptions, semOptions, subjectOptions],                        
+  [yearOptions, semOptions],
   );
 
-  const courseFields = useMemo(
-  () =>
-    ENTITY_FIELDS.course.map(([key, label, options]) =>
-      key === "name" ? [key, label, courseOptions] : [key, label, options],
-    ),
-  [courseOptions],
+  const courseOptions = useMemo(
+    () => courses.map((c) => ({ value: String(c.id), label: c.name })),
+    [courses],
   );
+
+  // Plain text "name" field - used by the table's own "+ Add" button so typing
+  // a new name creates it directly in the course master table.
+  const courseFields = ENTITY_FIELDS.course;
 
   // `values.region` is either the region id (string, if the dropdown was
   // touched) or the original region_desc (if the modal was opened on an
@@ -377,20 +375,48 @@ function BoardDashboard({ role, data, setActiveRoute }) {
   // up if it resolves after the modal was opened.
   const addModalConfig = {
     institution: { title: "Institution", fields: institutionFields },
-    course: { title: "Course", fields: courseFields },
-    subject: { title: "Subject", fields: subjectFields },
   };
 
+  const [courseSelectOpen, setCourseSelectOpen] = useState(false);
+  const courseSelectOptions = courseOptions.filter(
+    (option) => !coursesForInstitution.some((c) => c.name === option.label),
+  );
+
+  const [subjectSelectOpen, setSubjectSelectOpen] = useState(false);
+  const subjectSelectOptions = subjectOptions.filter(
+    (option) => !subjectsForCourse.some((s) => s.subject === option.label),
+  );
+
   function openAddModal(type) {
+    if (type === "course") {
+      setCourseSelectOpen(true);
+      return;
+    }
+    if (type === "subject") {
+      setSubjectSelectOpen(true);
+      return;
+    }
     const fields = addModalConfig[type].fields;
     setAddModal({ type, row: emptyRowFromFields(fields) });
   }
 
   async function handleAddModalSave(values) {
     if (addModal.type === "institution") await saveInstitution(values);
-    if (addModal.type === "course") await saveCourse(values);
-    if (addModal.type === "subject") await saveSubject(values);
     setAddModal(null);
+  }
+
+  async function handleCourseSelectSave(names) {
+    for (const name of names) {
+      await saveCourse({ name });
+    }
+    setCourseSelectOpen(false);
+  }
+
+  async function handleSubjectSelectSave(names) {
+    for (const name of names) {
+      await saveSubject({ subject: name });
+    }
+    setSubjectSelectOpen(false);
   }
 
   const metrics = [
@@ -447,18 +473,18 @@ function BoardDashboard({ role, data, setActiveRoute }) {
                 Add Institution
               </button>
             )}
-            {view === "courses" && (
+            {/* {view === "courses" && (
               <button className="secondary-btn compact-action" onClick={() => openAddModal("course")}>
                 <Layers size={16} />
                 Add Course
               </button>
-            )}
-            {view === "subjects" && (
+            )} */}
+            {/* {view === "subjects" && (
               <button className="secondary-btn compact-action" onClick={() => openAddModal("subject")}>
                 <BookOpen size={16} />
                 Add Subject
               </button>
-            )}
+            )} */}
             <button className="primary-btn compact-action" onClick={() => setActiveRoute("reports")}>
               <FileText size={16} />
               View MIS
@@ -531,6 +557,9 @@ function BoardDashboard({ role, data, setActiveRoute }) {
           rows={coursesForInstitution}
           columns={ENTITY_COLUMNS.courses}
           fields={courseFields}
+          addLabel="Add New Course"
+          secondaryAddLabel="Add Existing Course"
+          onSecondaryAdd={() => setCourseSelectOpen(true)}
           selectedId={selectedCourseIdResolved}
           emptyHint="No courses mapped"
           emptyActionLabel="Add Course"
@@ -553,6 +582,9 @@ function BoardDashboard({ role, data, setActiveRoute }) {
             rows={subjectsForCourse}
             columns={ENTITY_COLUMNS.boardSubjects}
             fields={subjectFields}
+            addLabel="Add New Subject"
+            secondaryAddLabel="Add Existing Subject"
+            onSecondaryAdd={() => setSubjectSelectOpen(true)}
             selectedId={selectedSubject?.id || null}
             emptyHint="No subjects mapped"
             emptyActionLabel="Add Subject"
@@ -584,6 +616,24 @@ function BoardDashboard({ role, data, setActiveRoute }) {
           title={addModalConfig[addModal.type].title}
           onClose={() => setAddModal(null)}
           onSave={handleAddModalSave}
+        />
+      )}
+      {courseSelectOpen && (
+        <CourseSelectModal
+          title="Course"
+          emptyMessage="No more courses available to add."
+          options={courseSelectOptions}
+          onClose={() => setCourseSelectOpen(false)}
+          onSave={handleCourseSelectSave}
+        />
+      )}
+      {subjectSelectOpen && (
+        <CourseSelectModal
+          title="Subject"
+          emptyMessage="No more subjects available to add."
+          options={subjectSelectOptions}
+          onClose={() => setSubjectSelectOpen(false)}
+          onSave={handleSubjectSelectSave}
         />
       )}
     </section>

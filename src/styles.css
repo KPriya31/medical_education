@@ -1000,6 +1000,11 @@ button.hierarchy-item:hover {
   line-height: 1.1;
 }
 
+.data-table-heading-actions {
+  display: flex;
+  gap: 10px;
+}
+
 .data-table-heading span {
   display: block;
   margin-top: 4px;
@@ -1417,6 +1422,32 @@ tbody tr:last-child td {
   justify-content: flex-end;
   gap: 10px;
   margin-top: 18px;
+}
+
+.course-select-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 18px;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.course-select-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.course-select-row:hover {
+  background: var(--bg);
+}
+
+.course-select-row input {
+  width: auto;
 }
 
 @media (max-width: 1100px) {
