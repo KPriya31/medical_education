@@ -412,9 +412,9 @@ function BoardDashboard({ role, data, setActiveRoute }) {
     setCourseSelectOpen(false);
   }
 
-  async function handleSubjectSelectSave(names) {
+  async function handleSubjectSelectSave(names, extraValues) {
     for (const name of names) {
-      await saveSubject({ subject: name });
+      await saveSubject({ subject: name, year: extraValues.year, semester: extraValues.semester });
     }
     setSubjectSelectOpen(false);
   }
@@ -632,6 +632,10 @@ function BoardDashboard({ role, data, setActiveRoute }) {
           title="Subject"
           emptyMessage="No more subjects available to add."
           options={subjectSelectOptions}
+          extraFields={[
+            ["year", "Year", yearOptions],
+            ["semester", "Semester", semOptions],
+          ]}
           onClose={() => setSubjectSelectOpen(false)}
           onSave={handleSubjectSelectSave}
         />

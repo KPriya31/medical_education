@@ -3,15 +3,20 @@ import { X, CircleCheck } from "lucide-react";
 
 // Lets the user tick multiple master records at once instead of picking one
 // at a time, then maps all of them on Save. Used for both "Add Existing
-// Course" and "Add Existing Subject".
+// Course" and "Add Existing Subject". `extraFields` (optional [key, label,
+// options] tuples) renders dropdowns applied to every selected record - e.g.
+// subjects also need a Year/Semester to satisfy the mapping table's NOT NULL
+// columns, which a plain name checklist can't supply on its own.
 export default function CourseSelectModal({
   title = "Course",
   emptyMessage = "No more records available to add.",
   options,
+  extraFields = [],
   onClose,
   onSave,
 }) {
   const [selected, setSelected] = useState([]);
+  const [extraValues, setExtraValues] = useState({});
 
   function toggle(value) {
     setSelected((prev) =>
@@ -23,8 +28,11 @@ export default function CourseSelectModal({
     const names = options
       .filter((option) => selected.includes(option.value))
       .map((option) => option.label);
-    onSave(names);
+    onSave(names, extraValues);
   }
+
+  const canSave =
+    selected.length > 0 && extraFields.every(([key]) => extraValues[key]);
 
   return (
     <div className="modal-backdrop" role="presentation">
@@ -38,6 +46,29 @@ export default function CourseSelectModal({
             <X size={18} />
           </button>
         </div>
+        {extraFields.length > 0 && (
+          <div className="form-grid">
+            {extraFields.map(([key, label, fieldOptions]) => (
+              <label key={key}>
+                <span>{label}</span>
+                <select
+                  aria-label={label}
+                  value={extraValues[key] || ""}
+                  onChange={(e) => setExtraValues((prev) => ({ ...prev, [key]: e.target.value }))}
+                >
+                  <option value="" disabled>
+                    Select {label}
+                  </option>
+                  {fieldOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            ))}
+          </div>
+        )}
         <div className="course-select-list">
           {options.length === 0 && <p>{emptyMessage}</p>}
           {options.map((option) => (
@@ -55,7 +86,7 @@ export default function CourseSelectModal({
           <button className="secondary-btn" onClick={onClose}>
             Cancel
           </button>
-          <button className="primary-btn" disabled={!selected.length} onClick={handleSave}>
+          <button className="primary-btn" disabled={!canSave} onClick={handleSave}>
             <CircleCheck size={18} />
             Add Selected
           </button>
