@@ -22,6 +22,9 @@ export default function DataTable({
   emptyActionLabel = "",
   statusFilterOptions = STATUS_OPTIONS,
   onEmptyAction,
+  addLabel = "Add",
+  secondaryAddLabel = "",
+  onSecondaryAdd,
   onSelect,
   onSave,
   onDelete,
@@ -95,16 +98,28 @@ export default function DataTable({
           <h3>{title}</h3>
           {disabled && disabledHint && <span>{disabledHint}</span>}
         </div>
-        {canAdd && (
-          <button
-            className="primary-btn compact-btn"
-            disabled={disabled}
-            onClick={() => setModalState({ mode: "add", row: emptyRowFromFields(fields) })}
-          >
-            <Plus size={16} />
-            Add
-          </button>
-        )}
+        <div className="data-table-heading-actions">
+          {secondaryAddLabel && onSecondaryAdd && (
+            <button
+              className="secondary-btn compact-btn"
+              disabled={disabled}
+              onClick={onSecondaryAdd}
+            >
+              <Plus size={16} />
+              {secondaryAddLabel}
+            </button>
+          )}
+          {canAdd && (
+            <button
+              className="primary-btn compact-btn"
+              disabled={disabled}
+              onClick={() => setModalState({ mode: "add", row: emptyRowFromFields(fields) })}
+            >
+              <Plus size={16} />
+              {addLabel}
+            </button>
+          )}
+        </div>
       </div>
       <div className="table-toolbar">
         <label className="search-box small">
@@ -159,7 +174,7 @@ export default function DataTable({
                 <td colSpan={columns.length + 2} className="empty-state">
                   <div className="table-empty">
                     <span>{disabled && disabledHint ? disabledHint : emptyHint}</span>
-                    {!disabled && emptyActionLabel && (
+                    {/* {!disabled && emptyActionLabel && (
                       <button
                         className="secondary-btn compact-action"
                         onClick={
@@ -170,7 +185,7 @@ export default function DataTable({
                         <Plus size={15} />
                         {emptyActionLabel}
                       </button>
-                    )}
+                    )} */}
                   </div>
                 </td>
               </tr>
