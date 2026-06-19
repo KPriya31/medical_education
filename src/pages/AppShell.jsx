@@ -9,7 +9,15 @@ import DepartmentAdminsPage from "./DepartmentAdminsPage.jsx";
 import { ROUTES } from "../routes.js";
 import { ENTITY_COLUMNS } from "../data.js";
 
-export default function AppShell({ role, data, activeRoute, setActiveRoute, updateEntity, onLogout }) {
+export default function AppShell({
+  role,
+  data,
+  activeRoute,
+  setActiveRoute,
+  updateEntity,
+  onLogout,
+  onBoardSwitch,
+}) {
   const routesForRole = useMemo(() => ROUTES.filter((route) => route.roles.includes(role)), [role]);
   const currentRoute = routesForRole.find((route) => route.key === activeRoute) || routesForRole[0];
 
@@ -19,7 +27,7 @@ export default function AppShell({ role, data, activeRoute, setActiveRoute, upda
       <div className="app-shell">
         <Sidebar routes={routesForRole} activeRoute={currentRoute.key} setActiveRoute={setActiveRoute} />
         <main className="main-panel">
-          <Topbar role={role} onLogout={onLogout} />
+          <Topbar role={role} onLogout={onLogout} onBoardSwitch={onBoardSwitch} />
           {currentRoute.type === "dashboard" ? (
             <Dashboard data={data} role={role} routes={routesForRole} setActiveRoute={setActiveRoute} updateEntity={updateEntity} />
           ) : currentRoute.type === "department-admins" ? (

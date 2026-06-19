@@ -13,8 +13,7 @@ export default function SiteHeader({ showSearch = true }) {
             <b>MEDICAL EDUCATION BOARD</b>
             <strong>Examination Marks Software (EMS)</strong>
             <span>
-              MOTHER THERESA POST GRADUATE AND RESEARCH INSTITUTE OF HEALTH
-              SCIENCES (MTPG & RIHS)
+              Board of Medical Education - Board of Examination in Nursing
             </span>
             <em>Government of Puducherry</em>
           </div>

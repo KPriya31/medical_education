@@ -16,6 +16,6 @@ def get_connection():
         host=os.environ.get("DB_HOST", "localhost"),
         port=int(os.environ.get("DB_PORT", "3306")),
         user=os.environ.get("DB_USER", "root"),
-        password=os.environ.get("DB_PASSWORD", "nanda"),
+        password=os.environ.get("DB_PASSWORD", "admin123"),
         database=os.environ.get("DB_NAME", "ems_dev"),
     )

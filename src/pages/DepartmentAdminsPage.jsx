@@ -8,6 +8,7 @@ import * as api from "../api.js";
 const FIELDS = [
   ["username", "Username"],
   ["password", "Password"],
+  ["department", "Department"],
 ];
 
 // Super Admin only: create/list/delete real department-admin accounts
@@ -45,7 +46,7 @@ export default function DepartmentAdminsPage() {
       <div className="page-heading">
         <div>
           <p className="eyebrow">Super Admin</p>
-          <h2>Department Admins</h2>
+          <h2></h2>
         </div>
       </div>
       <section className="data-table-card">
@@ -64,6 +65,8 @@ export default function DepartmentAdminsPage() {
             <thead>
               <tr>
                 <th>Username</th>
+                <th>Role</th>
+                <th>Department</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -72,7 +75,7 @@ export default function DepartmentAdminsPage() {
                 <tr>
                   <td colSpan={2} className="empty-state">
                     <div className="table-empty">
-                      <span>No department admins yet</span>
+                      <span>No Department Admin yet</span>
                       <button className="secondary-btn compact-action" onClick={() => setModalOpen(true)}>
                         <Plus size={15} />
                         Add Department Admin
@@ -84,6 +87,8 @@ export default function DepartmentAdminsPage() {
                 admins.map((admin) => (
                   <tr key={admin.id}>
                     <td data-label="Username">{admin.username}</td>
+                    <td data-label="Role">{admin.role}</td>
+                    <td data-label="Department">{admin.department}</td>
                     <td data-label="Actions">
                       <div className="action-group">
                         <IconButton label="Delete" onClick={() => handleDelete(admin)} icon={Trash2} tone="danger" />

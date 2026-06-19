@@ -18,11 +18,12 @@ app = Flask(__name__)
 # Vite picks a different port if 5173 is busy, and may be reached via the
 # machine's LAN IP instead of localhost - allow any localhost/127.0.0.1/private
 # LAN address on any port for local dev, rather than hardcoding one origin.
-CORS(app, origins=[
-    r"^http://localhost(:\d+)?$",
-    r"^http://127\.0\.0\.1(:\d+)?$",
-    r"^http://192\.168\.\d{1,3}\.\d{1,3}(:\d+)?$",
-])
+# CORS(app, origins=[
+#     r"^http://localhost(:\d+)?$",
+#     r"^http://127\.0\.0\.1(:\d+)?$",
+#     r"^http://192\.168\.\d{1,3}\.\d{1,3}(:\d+)?$",
+# ])
+CORS(app)
 
 
 def status_to_label(status_):
@@ -82,6 +83,35 @@ def get_exam_sems():
         cursor = conn.cursor()
         cursor.execute(
             "SELECT sem_id, sem_desc FROM tbl_exam_sem_master WHERE status_ = 1"
+        )
+        rows = cursor.fetchall()
+        cursor.close()
+        return jsonify([{"id": r[0], "name": r[1]} for r in rows])
+    finally:
+        conn.close()
+
+
+@app.route("/api/courses", methods=["GET"])
+def get_courses():
+    conn = get_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT course_id, course_desc FROM tbl_course_master WHERE status_ = 1"
+        )
+        rows = cursor.fetchall()
+        cursor.close()
+        return jsonify([{"id": r[0], "name": r[1]} for r in rows])
+    finally:
+        conn.close()
+
+@app.route("/api/subjects", methods=["GET"])
+def get_all_subjects():
+    conn = get_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT subject_id, subject_desc FROM tbl_subject_master WHERE status_ = 1"
         )
         rows = cursor.fetchall()
         cursor.close()
@@ -600,6 +630,7 @@ def create_department_admin():
     body = request.get_json(force=True) or {}
     username = (body.get("username") or "").strip()
     password = body.get("password") or ""
+    department = body.get("department") or ""
     if not username or not password:
         return jsonify({"error": "Username and password are required"}), 400
 
@@ -608,10 +639,10 @@ def create_department_admin():
         cursor = conn.cursor()
         cursor.execute(
             """
-            INSERT INTO users (username, password, created_by, role)
-            VALUES (%s, %s, %s, %s)
+            INSERT INTO users (username, password, department, created_by, role)
+            VALUES (%s, %s, %s, %s, %s)
             """,
-            (username, generate_password_hash(password), "superadmin", "department-admin"),
+            (username, generate_password_hash(password), department, "superadmin", "department-admin"),
         )
         conn.commit()
         new_id = cursor.lastrowid

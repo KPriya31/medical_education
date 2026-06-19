@@ -8,6 +8,7 @@ import {
   Layers,
   BookOpen,
   ClipboardCheck,
+  ArrowLeft,
   ChevronRight,
   Plus,
   Pencil,
@@ -110,6 +111,8 @@ function BoardDashboard({ role, data, setActiveRoute }) {
   const [regions, setRegions] = useState([]);
   const [years, setYears] = useState([]);
   const [examSems, setExamSems] = useState([]);
+  const [courses, setCourses] = useState([]);
+  const [subjects, setSubjects] = useState([]);
 
   const [selectedInstitutionId, setSelectedInstitutionId] = useState(null);
   const [selectedCourseId, setSelectedCourseId] = useState(null);
@@ -148,9 +151,11 @@ function BoardDashboard({ role, data, setActiveRoute }) {
   }, [role, refreshInstitutions]);
 
   useEffect(() => {
-    api.getRegions().then(setRegions).catch(() => setRegions([]));
-    api.getYears().then(setYears).catch(() => setYears([]));
-    api.getExamSems().then(setExamSems).catch(() => setExamSems([]));
+  api.getRegions().then(setRegions).catch(() => setRegions([]));
+  api.getYears().then(setYears).catch(() => setYears([]));
+  api.getExamSems().then(setExamSems).catch(() => setExamSems([]));
+  api.getListCourses().then(setCourses).catch(() => setCourses([]));
+  api.getListSubjects().then(setSubjects).catch(() => setSubjects([]));  // ← add
   }, []);
 
   useEffect(() => {
@@ -180,6 +185,16 @@ function BoardDashboard({ role, data, setActiveRoute }) {
     [examSems],
   );
 
+  const courseOptions = useMemo(
+    () => courses.map((c) => ({ value: String(c.id), label: c.name })),
+    [courses],
+  );
+
+  const subjectOptions = useMemo(
+  () => subjects.map((s) => ({ value: String(s.id), label: s.name })),
+  [subjects],
+  );
+
   const institutionFields = useMemo(
     () =>
       ENTITY_FIELDS.institution.map(([key, label, options]) =>
@@ -188,13 +203,22 @@ function BoardDashboard({ role, data, setActiveRoute }) {
     [regionOptions],
   );
   const subjectFields = useMemo(
-    () =>
-      ENTITY_FIELDS.boardSubject.map(([key, label, options]) => {
-        if (key === "year") return [key, label, yearOptions];
-        if (key === "semester") return [key, label, semOptions];
-        return [key, label, options];
-      }),
-    [yearOptions, semOptions],
+  () =>
+    ENTITY_FIELDS.boardSubject.map(([key, label, options]) => {
+      if (key === "subject") return [key, label, subjectOptions];   
+      if (key === "year") return [key, label, yearOptions];
+      if (key === "semester") return [key, label, semOptions];
+      return [key, label, options];
+    }),
+  [yearOptions, semOptions, subjectOptions],                        
+  );
+
+  const courseFields = useMemo(
+  () =>
+    ENTITY_FIELDS.course.map(([key, label, options]) =>
+      key === "name" ? [key, label, courseOptions] : [key, label, options],
+    ),
+  [courseOptions],
   );
 
   // `values.region` is either the region id (string, if the dropdown was
@@ -223,6 +247,30 @@ function BoardDashboard({ role, data, setActiveRoute }) {
     const byName = examSems.find((s) => s.name === semValue);
     return byName ? byName.id : null;
   }
+
+  function resolveCourseId(courseValue) {
+    if (!courseValue) return null;
+    const byId = courses.find((c) => String(c.id) === String(courseValue));
+    if (byId) return byId.id;
+    const byName = courses.find((c) => c.name === courseValue);
+    return byName ? byName.id : null;
+  }
+
+  function resolveSubjectDesc(subjectValue) {
+  if (!subjectValue) return subjectValue;
+  // if it's an ID, find the name
+  const byId = subjects.find((s) => String(s.id) === String(subjectValue));
+  if (byId) return byId.name;
+  // already a plain name (wasn't changed in the modal)
+  return subjectValue;
+ }
+
+ function resolveCourseDesc(courseValue) {
+  if (!courseValue) return courseValue;
+  const byId = courses.find((c) => String(c.id) === String(courseValue));
+  if (byId) return byId.name;
+  return courseValue;
+}
 
   async function saveInstitution(values) {
     const payload = {
@@ -263,7 +311,7 @@ function BoardDashboard({ role, data, setActiveRoute }) {
   }
 
   async function saveCourse(values) {
-    const payload = { name: values.name, status: values.status || "Active" };
+    const payload = { name: resolveCourseDesc(values.name), status: values.status || "Active" };
     if (values.id) {
       await api.updateCourse(values.id, payload);
     } else {
@@ -285,13 +333,13 @@ function BoardDashboard({ role, data, setActiveRoute }) {
 
   async function toggleCourseRow(row) {
     const nextStatus = row.status === "Inactive" ? "Active" : "Inactive";
-    await api.updateCourse(row.id, { name: row.name, status: nextStatus });
+    await api.updateCourse(row.id, { name: resolveCourseDesc(row.name), status: nextStatus });
     refreshCourses(selectedInstitutionIdResolved);
   }
 
   async function saveSubject(values) {
     const payload = {
-      subject: values.subject,
+      subject: resolveSubjectDesc(values.subject),
       year_id: resolveYearId(values.year),
       sem_id: resolveSemId(values.semester),
       priority: values.priority || null,
@@ -315,7 +363,7 @@ function BoardDashboard({ role, data, setActiveRoute }) {
   async function toggleSubjectRow(row) {
     const nextStatus = row.status === "Inactive" ? "Active" : "Inactive";
     await api.updateSubject(row.id, {
-      subject: row.subject,
+      subject: resolveSubjectDesc(row.subject),
       year_id: resolveYearId(row.year),
       sem_id: resolveSemId(row.semester),
       priority: row.priority,
@@ -329,7 +377,7 @@ function BoardDashboard({ role, data, setActiveRoute }) {
   // up if it resolves after the modal was opened.
   const addModalConfig = {
     institution: { title: "Institution", fields: institutionFields },
-    course: { title: "Course", fields: ENTITY_FIELDS.course },
+    course: { title: "Course", fields: courseFields },
     subject: { title: "Subject", fields: subjectFields },
   };
 
@@ -368,6 +416,16 @@ function BoardDashboard({ role, data, setActiveRoute }) {
     setSelectedSubjectId(null);
   }
 
+  function goBackOneLevel() {
+    if (view === "subjects") {
+      goToCourses();
+      return;
+    }
+    if (view === "courses") {
+      goToInstitutions();
+    }
+  }
+
   return (
     <section className="board-dashboard">
       <section className="board-summary-card">
@@ -377,6 +435,12 @@ function BoardDashboard({ role, data, setActiveRoute }) {
             <h2>{role} Portal</h2>
           </div>
           <div className="board-quick-actions" aria-label="Quick actions">
+            {view !== "institutions" && (
+              <button className="secondary-btn compact-action" onClick={goBackOneLevel}>
+                <ArrowLeft size={16} />
+                {view === "subjects" ? "Back to Courses" : "Back to Institutions"}
+              </button>
+            )}
             {view === "institutions" && (
               <button className="secondary-btn compact-action" onClick={() => openAddModal("institution")}>
                 <Building2 size={16} />
@@ -466,7 +530,7 @@ function BoardDashboard({ role, data, setActiveRoute }) {
           title={`Courses - ${selectedInstitution?.name || ""}`}
           rows={coursesForInstitution}
           columns={ENTITY_COLUMNS.courses}
-          fields={ENTITY_FIELDS.course}
+          fields={courseFields}
           selectedId={selectedCourseIdResolved}
           emptyHint="No courses mapped"
           emptyActionLabel="Add Course"

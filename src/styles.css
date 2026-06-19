@@ -656,6 +656,14 @@ select:disabled {
   margin-bottom: 22px;
 }
 
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
 h1,
 h2,
 h3 {
@@ -1093,7 +1101,8 @@ button.hierarchy-item:hover {
   color: var(--white);
 }
 
-.logout-btn {
+.logout-btn,
+.switch-board-btn {
   white-space: nowrap;
 }
 
@@ -1599,6 +1608,12 @@ tbody tr:last-child td {
     justify-content: stretch;
   }
 
+  .topbar-actions {
+    justify-content: stretch;
+    width: 100%;
+  }
+
+  .topbar-actions .secondary-btn,
   .board-quick-actions .primary-btn,
   .board-quick-actions .secondary-btn,
   .hierarchy-item {
