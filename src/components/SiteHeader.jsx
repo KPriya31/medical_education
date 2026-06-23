@@ -11,7 +11,7 @@ export default function SiteHeader({ showSearch = true }) {
           />
           <div className="identity-title">
             <b>MEDICAL EDUCATION BOARD</b>
-            <strong>Examination Marks Software (EMS)</strong>
+            <strong>Examination Marks System (EMS)</strong>
             <span>
               Board of Medical Education - Board of Examination in Nursing
             </span>

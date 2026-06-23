@@ -6,6 +6,7 @@
 // etc.) instead of hardcoding "localhost" - otherwise a browser on another
 // machine would try to reach its OWN localhost:5000, not this one.
 const BASE_URL = `http://${window.location.hostname}:5000/api`;
+//const BASE_URL = "/api";
 
 async function request(path, options) {
   const res = await fetch(`${BASE_URL}${path}`, {

@@ -11,7 +11,7 @@ export default function Topbar({ role, onLogout, onBoardSwitch }) {
         {onBoardSwitch && (
           <button className="secondary-btn switch-board-btn" onClick={onBoardSwitch}>
             <ArrowLeft size={17} />
-            Switch Board
+            Switch to BOME / BOEN Portal  
           </button>
         )}
         <button className="secondary-btn logout-btn" onClick={onLogout}>
